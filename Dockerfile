@@ -18,6 +18,8 @@ COPY entrypoint.sh /sbin/entrypoint.sh
 
 RUN chmod 755 /sbin/entrypoint.sh
 
+RUN sed 's/# VerboseLog/VerboseLog/' -i /etc/apt-cacher-ng/acng.conf 
+
 EXPOSE 3142/tcp
 
 HEALTHCHECK --interval=10s --timeout=2s --retries=3 \

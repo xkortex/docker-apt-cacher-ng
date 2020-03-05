@@ -1,11 +1,12 @@
-version: '2.2'
+version: '3'
 
 services:
   apt-cacher-ng:
-    restart: always
-    image: sameersbn/apt-cacher-ng:3.1-3
-    init: true
+    build:
+      context: .
+    restart: unless-stopped
+    image: "${REGISTRY:-sameersbn}/apt-cacher-ng:${TAG:-latest}"
     ports:
     - "3142:3142"
     volumes:
-    - /srv/docker/apt-cacher-ng:/var/cache/apt-cacher-ng
+    - /data/apt-cacher-ng:/var/cache/apt-cacher-ng

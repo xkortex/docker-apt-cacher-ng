@@ -1,0 +1,32 @@
+FROM ubuntu:bionic-20190612
+
+
+## === apt cacher magic ! ===
+# Unfortunately the apt package for Xenial is not available, so using the deb is more flexible
+# You can apt-get install auto-apt-proxy in Bionic and later
+# https://mirror.pit.teraswitch.com/debian/pool/main/a/auto-apt-proxy/
+
+ADD https://mirror.pit.teraswitch.com/debian/pool/main/a/auto-apt-proxy/auto-apt-proxy_12_all.deb \
+        /auto-apt-proxy.deb
+
+RUN     dpkg -i /auto-apt-proxy.deb \
+    &&  auto-apt-proxy \
+    &&  echo "Acquire::http::Proxy \"$CACHING_PROXY\";" | tee -a /etc/apt/apt.conf.d/00proxy \
+    &&  echo "Acquire::https::Proxy-Auto-Detect \"/usr/bin/auto-apt-proxy\";" | tee -a /etc/apt/apt.conf.d/00proxy \
+    &&  echo "Acquire::http::Proxy-Auto-Detect \"/usr/bin/auto-apt-proxy\";" | tee /etc/apt/apt.conf.d/auto-apt-proxy.conf \
+    &&  rm /auto-apt-proxy.deb
+## === end apt cacher magic ! ===
+
+RUN apt-get update \
+ && DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y \
+      auto-apt-proxy \
+      iputils-ping \
+      dnsutils \
+ && rm -rf /var/lib/apt/lists/*
+
+ADD "https://www.random.org/integers/?num=1&min=1&max=100&col=5&base=10&format=html&rnd=new" /rando.txt
+RUN auto-apt-proxy || echo "<!> failed to auto-apt-proxy"
+
+RUN dig athena
+
+RUN dig localhost
